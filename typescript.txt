@@ -1,5 +1,6 @@
 # JAVAと違う文法で、ハマった内容を整理する。
 
+~~~typescript
 var bookmarks;
 bookmarks = { key1: 'value1' }; // Object1を指定
 bookmarks = { key2: 'value2' }; // Object2指定より、Object1を上書きする。
@@ -14,4 +15,4 @@ console.log(bookmarks['key3']); // 新しい値を確認する。
 console.log(Object.keys(bookmarks));　// Object3のキーを出力する。
 
 console.log('<-- bookmarks test end -->');
-
+~~~
