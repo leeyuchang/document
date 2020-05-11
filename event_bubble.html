@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>test for event bubbles on DOM TREE</title>
+</head>
+<body> 
+  <div id="outer">
+    <div id="inner">
+      <a href="#" onclick="dispatch(event)">Click</a>
+    </div>
+  </div>
+  <script>
+    function $(el) {
+      return document.getElementById(el);
+    }
+
+    $('inner').addEventListener('cat', (e) => console.log(e.detail," with 1st"), false);
+    $('outer').addEventListener('cat', (e) => console.log(e.detail," with 2nd"), false);
+
+    function dispatch(e) {
+      const evt = new CustomEvent('cat', {
+        bubbles: true,  // ※これがないと、innerとouterのイベントが実行しない！！！
+        detail: 'hello'
+      });
+      event.target.dispatchEvent(evt);
+    }
+  </script>
+</body>
+</html>
