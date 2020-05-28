@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sample of Group by</title>
+  </head>
+  <body>
+    <script>
+      log = console.log;
+    </script>
+    <script>
+      var users = [
+        { id: 10, name: "ID", age: 36 },
+        { id: 20, name: "BJ", age: 32 },
+        { id: 30, name: "JM", age: 32 },
+        { id: 40, name: "PJ", age: 27 },
+        { id: 50, name: "HA", age: 25 },
+        { id: 60, name: "JE", age: 26 },
+        { id: 70, name: "JI", age: 31 },
+        { id: 80, name: "MP", age: 23 },
+        { id: 90, name: "FP", age: 13 },
+      ];
+      // Group_by age
+      let result = users.reduce((acc, val) => {
+        let key = val.age;
+        (acc[key] = acc[key] || []).push(val);
+        return acc;
+      }, {});
+    </script>
+    <noscript>
+      <!-- Result -->
+      { '13': [ { id: 90, name: 'FP', age: 13 } ],
+        '23': [ { id: 80, name: 'MP', age: 23 } ],
+        '25': [ { id: 50, name: 'HA', age: 25 } ],
+        '26': [ { id: 60, name: 'JE', age: 26 } ],
+        '27': [ { id: 40, name: 'PJ', age: 27 } ],
+        '31': [ { id: 70, name: 'JI', age: 31 } ],
+        '32': [ { id: 20, name: 'BJ', age: 32 },
+                { id: 30, name: 'JM', age: 32 } ],
+        '36': [ { id: 10, name: 'ID', age: 36 } ] }
+    </noscript>
+  </body>
+</html>
