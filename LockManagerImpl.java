@@ -1,6 +1,7 @@
 package com.jpa1.jpa1.service;
 
 import static java.time.Duration.ofMinutes;
+import static java.util.Collections.synchronizedList;
 import static java.util.stream.Collectors.toList;
 
 import java.time.LocalTime;
@@ -18,8 +19,8 @@ import lombok.ToString;
 
 public class LockManagerImpl implements LockManager {
 
-  private List<LockData> lockDataList = new ArrayList<>();
-  private final long lockTimeout = 5; // Time Unit : Min
+  private List<LockData> lockDataList = synchronizedList(new ArrayList<>());
+  private final long lockTimeout = 5;
 
   @Getter
   @ToString
@@ -46,6 +47,7 @@ public class LockManagerImpl implements LockManager {
   }
 
   private void checkAlreadyLocked(String type, String id) {
+
     Predicate<LockData> idAndType = e -> e.getType().equals(type) && e.getId().equals(id);
     List<LockData> locks = lockDataList.stream().filter(idAndType).collect(toList());
     Optional<LockData> lockData = handleExpiration(locks);
