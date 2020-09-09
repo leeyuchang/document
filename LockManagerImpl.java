@@ -2,7 +2,6 @@ package com.jpa1.jpa1.service;
 
 import static java.time.Duration.ofMinutes;
 import static java.util.Collections.synchronizedList;
-import static java.util.stream.Collectors.toList;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -10,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -47,11 +45,11 @@ public class LockManagerImpl implements LockManager {
   }
 
   private void checkAlreadyLocked(String type, String id) {
+    Optional<LockData> lockOpt = lockDataList.stream()
+        .filter(e -> e.getType().equals(type) && e.getId().equals(id))
+        .findFirst();
 
-    Predicate<LockData> idAndType = e -> e.getType().equals(type) && e.getId().equals(id);
-    List<LockData> locks = lockDataList.stream().filter(idAndType).collect(toList());
-    Optional<LockData> lockData = handleExpiration(locks);
-
+    Optional<LockData> lockData = handleExpiration(lockOpt);
     if (lockData.isPresent()) throw new AlreadyLockedException("AlreadyLockedException");
   }
 
@@ -59,9 +57,11 @@ public class LockManagerImpl implements LockManager {
     lockDataList.add(new LockData(type, id, lockId, LocalTime.now()));
   }
 
-  private Optional<LockData> handleExpiration(List<LockData> locks) {
-    if (locks.isEmpty()) return Optional.empty();
-    LockData lockData = locks.get(0);
+  private Optional<LockData> handleExpiration(Optional<LockData> lockOpt) {
+    if (lockOpt == null || lockOpt.isEmpty())
+      return Optional.empty();
+
+    LockData lockData = lockOpt.get();
     if (lockData.isExpired()) {
       lockDataList.remove(lockData);
       return Optional.empty();
@@ -76,13 +76,8 @@ public class LockManagerImpl implements LockManager {
 
   @Override
   public void checkLock(LockId lockId) throws LockException {
-    Optional<LockData> lockData = getLockData(lockId);
-    if (lockData.isEmpty())
-      throw new NoLockException("NoLockException");
-  }
-
-  private Optional<LockData> getLockData(LockId lockId) {
-    return lockDataList.stream().filter(e -> e.getLockId().equals(lockId)).findFirst();
+    Optional<LockData> lockDataOpt = getLockData(lockId);
+    lockDataOpt.orElseThrow(()-> new NoLockException("Failed to get lock"));
   }
 
   @Override
@@ -96,6 +91,10 @@ public class LockManagerImpl implements LockManager {
   public void releaseLock(LockId lockId) throws LockException {
     LockData lockdata = findLockDataByLockId(lockId);
     lockDataList.remove(lockdata);
+  }
+
+  private Optional<LockData> getLockData(LockId lockId) {
+    return lockDataList.stream().filter(e -> e.getLockId().equals(lockId)).findFirst();
   }
 
   private LockData findLockDataByLockId(LockId lockId) {
