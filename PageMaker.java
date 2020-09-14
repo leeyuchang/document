@@ -6,11 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import lombok.Getter;
 import lombok.ToString;
-import lombok.extern.java.Log;
 
 @Getter
 @ToString(exclude = "pageList")
-@Log
 public class PageMaker<T> {
 
   private Page<T> result;
@@ -34,22 +32,25 @@ public class PageMaker<T> {
   }
 
   private void calcPages() {
-    int tempEndNum = (int) (Math.ceil(currentPageNum + 1 / 5.0) * 5);
-    int startNum = tempEndNum - 4;
+    int endPageNum = (int) (Math.ceil((currentPageNum + 1) / 5.0) * 5);
+    int startPageNum = endPageNum - 4;
+
     Pageable startPage = currentPage;
-    for (int i = startNum; i < currentPageNum + 1; i++) {
+
+    for (int i = startPageNum; i < currentPageNum + 1; i++) {
       startPage = startPage.previousOrFirst();
     }
-    prevPage = startPage.getPageNumber() <= 0 ? null : startPage.previousOrFirst();
+    prevPage = startPage.getPageNumber() == 0 ? null : startPage.previousOrFirst();
    
-    if (totalPageNum < tempEndNum) {
-      tempEndNum = totalPageNum;
+    if (totalPageNum < endPageNum) {
+      endPageNum = totalPageNum;
     }
     
-    for (int i = startNum; i <= tempEndNum; i++) {
+    for (int i = startPageNum; i <= endPageNum; i++) {
       pageList.add(startPage);
       startPage = startPage.next();
     }
+
     nextPage = startPage.getPageNumber() < totalPageNum ? startPage : null;
   }
 }
