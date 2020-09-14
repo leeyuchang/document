@@ -10,7 +10,6 @@ import lombok.ToString;
 @Getter
 @ToString(exclude = "pageList")
 public class PageMaker<T> {
-
   private Page<T> result;
 
   private Pageable prevPage;
@@ -32,15 +31,16 @@ public class PageMaker<T> {
   }
 
   private void calcPages() {
+
     int endPageNum = (int) (Math.ceil((currentPageNum + 1) / 5.0) * 5);
     int startPageNum = endPageNum - 4;
 
     Pageable startPage = currentPage;
 
-    for (int i = startPageNum; i < currentPageNum + 1; i++) {
+    for (int i = startPageNum; i < (currentPageNum + 1); i++) {
       startPage = startPage.previousOrFirst();
     }
-    prevPage = startPage.getPageNumber() == 0 ? null : startPage.previousOrFirst();
+    prevPage = isPrevPage(startPage);
 
     if (totalPageNum < endPageNum) {
       endPageNum = totalPageNum;
@@ -51,6 +51,14 @@ public class PageMaker<T> {
       startPage = startPage.next();
     }
 
-    nextPage = startPage.getPageNumber() < totalPageNum ? startPage : null;
+    nextPage = isNextPage(startPage);
+  }
+
+  private Pageable isNextPage(Pageable startPage) {
+    return startPage.getPageNumber() < totalPageNum ? startPage : null;
+  }
+
+  private Pageable isPrevPage(Pageable startPage) {
+    return startPage.getPageNumber() == 0 ? null : startPage.previousOrFirst();
   }
 }
