@@ -41,11 +41,11 @@ public class PageMaker<T> {
       startPage = startPage.previousOrFirst();
     }
     prevPage = startPage.getPageNumber() == 0 ? null : startPage.previousOrFirst();
-   
+
     if (totalPageNum < endPageNum) {
       endPageNum = totalPageNum;
     }
-    
+
     for (int i = startPageNum; i <= endPageNum; i++) {
       pageList.add(startPage);
       startPage = startPage.next();
