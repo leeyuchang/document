@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+  <input id="btn1" type="button" value="Click">
+  <p id="result"></p>
+
+  <script>
+
+    let json;
+    let startPage;
+    let pageable;
+
+    document.getElementById('btn1').addEventListener('click', function (e) {
+      fetch("http://localhost:8080/boards/page?page=1&size=5")
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          document.getElementById('result').textContent = data;
+          json = data;
+
+          let prevPage = null;
+          let nextPage = null;
+
+          let currentPageNum = json.number;
+          let totalPageNum = json.totalPages;
+          let pageList = [];
+
+          let endPageNum = Math.ceil(json.number / json.size) * json.size;
+          let startPageNum = endPageNum - (json.size - 1);
+
+          let startPage = {
+            size: json.size,
+            page: json.number,
+            previousOrFirst: function () {
+              return this.page == 0 ? this : this.page = this.page - 1, this;
+            },
+            next: function () {
+              return this.page = this.page + 1, this;
+            },
+            getPageNumber: function () {
+              return this.page;
+            }
+          };
+
+          for (let i = startPageNum; i < (currentPageNum + 1); i++) {
+            startPage.previousOrFirst();
+          }
+          prevPage = startPage.getPageNumber() == 0 ? null : startPage.previousOrFirst();
+          if (totalPageNum < endPageNum) {
+            endPageNum = totalPageNum;
+          }
+          for (let i = startPageNum; i <= endPageNum; i++) {
+            pageList.push(startPage.getPageNumber());
+            startPage.next();
+          }
+          nextPage = startPage.getPageNumber() < totalPageNum ? startPage : null;
+
+          /** Result  */
+          console.log("prevPage:", prevPage);
+          pageList.forEach(console.log);
+          console.log("nextPage:", nextPage);
+
+        })
+    }, false);
+   
+  </script>
+</body>
+</html>
