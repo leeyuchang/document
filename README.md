@@ -6,3 +6,7 @@ https://regexper.com/
 
 ## Regx
 https://regexr.com/
+
+## Thymeleaf
+/*[+ ${msg} +]*/
+
