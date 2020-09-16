@@ -5,71 +5,86 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+
 </head>
 
 <body>
-
-  <input id="btn1" type="button" value="Click">
-  <p id="result"></p>
+  <input type="text" id="inputedPage">
+  <input id="btn" type="button" value="Click">
 
   <script>
-
-    let json;
-    let startPage;
-    let pageable;
-
-    document.getElementById('btn1').addEventListener('click', function (e) {
-      fetch("http://localhost:8080/boards/page?page=1&size=5")
+    let content = [];
+    document.getElementById('btn').addEventListener('click', function (e) {
+      let inputedPage = document.getElementById('inputedPage').value - 1;  /** Spring Data is Zero Index(1 substract)*/
+      fetch(`http://localhost:8080/boards/page?page=${inputedPage}&size=3`)
         .then(function (response) { return response.json(); })
         .then(function (data) {
-          document.getElementById('result').textContent = data;
-          json = data;
+
+          log('data.content',data.content);
+
+          content = data.content;
 
           let prevPage = null;
           let nextPage = null;
 
-          let currentPageNum = json.number;
-          let totalPageNum = json.totalPages;
+          let totalPageNum = data.totalPages;
+          log('totalPageNum:', totalPageNum);
+
           let pageList = [];
 
-          let endPageNum = Math.ceil(json.number / json.size) * json.size;
-          let startPageNum = endPageNum - (json.size - 1);
+          const currentPage = data.pageable;
+          const currentPageNum = currentPage.pageNumber;
+          log('currentPageNum:', currentPageNum);
 
-          let startPage = {
-            size: json.size,
-            page: json.number,
-            previousOrFirst: function () {
-              return this.page == 0 ? this : this.page = this.page - 1, this;
-            },
-            next: function () {
-              return this.page = this.page + 1, this;
-            },
-            getPageNumber: function () {
-              return this.page;
-            }
-          };
+          let endPageNum = Math.ceil(currentPageNum / data.size) * data.size;
+          const startPageNum = endPageNum - (data.size - 1);
 
-          for (let i = startPageNum; i < (currentPageNum + 1); i++) {
-            startPage.previousOrFirst();
+          log('startPageNum:', startPageNum);
+          log('endPageNum:', endPageNum);
+
+          let startPage = new pageable(data.number);
+
+          for (let i = startPageNum; i < (currentPageNum); i++) {
+            startPage = startPage.previousOrFirst;
           }
-          prevPage = startPage.getPageNumber() == 0 ? null : startPage.previousOrFirst();
+          prevPage = startPage.getPageNumber == 1 ? null : startPage.previousOrFirst;
+
           if (totalPageNum < endPageNum) {
             endPageNum = totalPageNum;
           }
-          for (let i = startPageNum; i <= endPageNum; i++) {
-            pageList.push(startPage.getPageNumber());
-            startPage.next();
-          }
-          nextPage = startPage.getPageNumber() < totalPageNum ? startPage : null;
 
-          /** Result  */
+          for (let i = startPageNum; i <= endPageNum; i++) {
+            pageList.push(startPage);
+            startPage = startPage.next;
+          }
+          nextPage = startPage.getPageNumber < totalPageNum ? startPage : null;
+
+          /** Result check */
           console.log("prevPage:", prevPage);
-          pageList.forEach(console.log);
+          pageList.forEach(p => console.log(p));
           console.log("nextPage:", nextPage);
 
         })
     }, false);
-   
+
+    class pageable {
+      constructor(page) {
+        this.page = page;
+      }
+      get previousOrFirst() {
+        return this.page == 0 ? this : new pageable(this.page - 1);
+      }
+      get next() {
+        return new pageable(this.page + 1);
+      }
+      get getPageNumber() {
+        return this.page;
+      }
+    }
+
+    log = console.log;
+
   </script>
 </body>
+
 </html>
