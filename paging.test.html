@@ -4,7 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <title>Pageing Test</title>
 
 </head>
 
@@ -12,17 +16,50 @@
   <input type="text" id="inputedPage">
   <input id="btn" type="button" value="Click">
 
+  <!--  -->
+  <div class="container">
+    <h2>Black/Dark Table</h2>
+    <p>The .table-dark class adds a black background to the table:</p>
+    <table class="table table-dark table-striped table-bordered table-hover" id="cotent">
+    </table>
+
+    <div id="paging">
+    </div>
+
+  </div>
   <script>
-    let content = [];
+    let contents = [];
     document.getElementById('btn').addEventListener('click', function (e) {
       let inputedPage = document.getElementById('inputedPage').value - 1;  /** Spring Data is Zero Index(1 substract)*/
       fetch(`http://localhost:8080/boards/page?page=${inputedPage}&size=3`)
         .then(function (response) { return response.json(); })
         .then(function (data) {
 
-          log('data.content',data.content);
+          log('data.content', data.content);
+          contents = data.content;
 
-          content = data.content;
+          const head = `
+           <thead>
+              <tr>
+                <th>BNO</th>
+                <th>TITLE</th>
+                <th>WRITER</th>
+                <th>REGDATE</th>
+              </tr>
+           </thead>
+           <tbody>
+            `
+          const contentDiv = contents.reduce((s, c) => {
+            return s + `
+              <tr>
+                <td>${c.bno}</td>
+                <td><a href='${c.bno}' class='boardLink'>${c.title}</a></td>
+                <td>${c.writer}</td>
+                <td class="center">${c.regdate}</td>
+              </tr>`
+          }, head) + `</tbody>`;
+
+          document.getElementById('cotent').innerHTML = contentDiv;
 
           let prevPage = null;
           let nextPage = null;
@@ -33,7 +70,7 @@
           let pageList = [];
 
           const currentPage = data.pageable;
-          const currentPageNum = currentPage.pageNumber;
+          const currentPageNum = currentPage.pageNumber + 1;
           log('currentPageNum:', currentPageNum);
 
           let endPageNum = Math.ceil(currentPageNum / data.size) * data.size;
@@ -42,12 +79,12 @@
           log('startPageNum:', startPageNum);
           log('endPageNum:', endPageNum);
 
-          let startPage = new pageable(data.number);
+          let startPage = new pageable(currentPageNum - 1/** Spring zero based index */);
 
           for (let i = startPageNum; i < (currentPageNum); i++) {
             startPage = startPage.previousOrFirst;
           }
-          prevPage = startPage.getPageNumber == 1 ? null : startPage.previousOrFirst;
+          prevPage = startPage.getPageNumber == 0 ? null : startPage.previousOrFirst;
 
           if (totalPageNum < endPageNum) {
             endPageNum = totalPageNum;
@@ -64,15 +101,58 @@
           pageList.forEach(p => console.log(p));
           console.log("nextPage:", nextPage);
 
+
+          let pagingDiv = document.getElementById('paging');
+          pagingDiv.innerHTML = '';
+
+          let ulOrg = document.createElement('ul');
+          ulOrg.className = 'pagination';
+
+          // prevPages
+          if(prevPage != null) {
+            let li = createLiWith(Anchor(prevPage.getPageNumber, "Previous"));
+            ulOrg.appendChild(li);
+          }
+
+          // Pages
+          pageList.forEach(pages => {
+              let li = createLiWith(Anchor(pages.getPageNumber + 1, pages.getPageNumber + 1), pages);
+              ulOrg.appendChild(li);
+          });
+
+          // nextPages
+          if(nextPage != null) {
+            let li = createLiWith(Anchor(nextPage.getPageNumber + 1, "Next"));
+            ulOrg.appendChild(li);
+          }
+
+          pagingDiv.appendChild(ulOrg);
+
+          function Anchor(href, textContent) {
+            let anchor = document.createElement('a');
+            anchor.className = 'page-link';
+            anchor.href = href;
+            anchor.textContent = textContent;
+            return anchor;
+          }
+
+          function createLiWith(anchor, pages) {
+            let li = document.createElement('li');
+            li.className = 'page-item';
+            if(pages) li.className = pages.getPageNumber + 1 == currentPageNum ? 'active page-item' : 'page-item';
+            li.appendChild(anchor);
+            return li;
+          }
         })
     }, false);
 
     class pageable {
+
       constructor(page) {
-        this.page = page;
+        this.page = page <= 0 ? 0 : page;
       }
       get previousOrFirst() {
-        return this.page == 0 ? this : new pageable(this.page - 1);
+        return this.page <= 0 ? this : new pageable(this.page - 1);
       }
       get next() {
         return new pageable(this.page + 1);
