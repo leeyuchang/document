@@ -1,18 +1,25 @@
-# JAVA‚Æˆá‚¤•¶–@‚ÅAƒnƒ}‚Á‚½“à—e‚ğ®—‚·‚éB
+# JAVAã¨é•ã†æ–‡æ³•ã§ã€ãƒãƒã£ãŸå†…å®¹ã‚’æ•´ç†ã™ã‚‹ã€‚
 
 ~~~javascript
 var bookmarks;
-bookmarks = { key1: 'value1' }; // Object1‚ğw’è
-bookmarks = { key2: 'value2' }; // Object2w’è‚æ‚èAObject1‚ğã‘‚«‚·‚éB
-bookmarks = { key3: 'value3' }; // Object3w’è‚æ‚èAObject2‚ğã‘‚«‚·‚éB
+bookmarks = { key1: 'value1' }; // Object1ã‚’æŒ‡å®š
+bookmarks = { key2: 'value2' }; // Object2æŒ‡å®šã‚ˆã‚Šã€Object1ã‚’ä¸Šæ›¸ãã™ã‚‹ã€‚
+bookmarks = { key3: 'value3' }; // Object3æŒ‡å®šã‚ˆã‚Šã€Object2ã‚’ä¸Šæ›¸ãã™ã‚‹ã€‚
 
 console.log('<-- bookmarks test start -->');
-console.log(bookmarks['key3']); // Object3‚ÌƒL[w’è‚æ‚èA’l‚ğæ“¾‚·‚éB
+console.log(bookmarks['key3']); // Object3ã®ã‚­ãƒ¼æŒ‡å®šã‚ˆã‚Šã€å€¤ã‚’å–å¾—ã™ã‚‹ã€‚
  
-bookmarks['key3'] = 'value4';@ // ¦ Object3‚ÌƒL[‚ğw’è‚µ‚ÄAV‚µ‚¢’l‚ğw’è‚·‚éB
-console.log(bookmarks['key3']); // V‚µ‚¢’l‚ğŠm”F‚·‚éB
+bookmarks['key3'] = 'value4';ã€€ // â€» Object3ã®ã‚­ãƒ¼ã‚’æŒ‡å®šã—ã¦ã€æ–°ã—ã„å€¤ã‚’æŒ‡å®šã™ã‚‹ã€‚
+console.log(bookmarks['key3']); // æ–°ã—ã„å€¤ã‚’ç¢ºèªã™ã‚‹ã€‚
 
-console.log(Object.keys(bookmarks));@// Object3‚ÌƒL[‚ğo—Í‚·‚éB
+console.log(Object.keys(bookmarks));ã€€// Object3ã®ã‚­ãƒ¼ã‚’å‡ºåŠ›ã™ã‚‹ã€‚
 
 console.log('<-- bookmarks test end -->');
 ~~~
+
+  public Optional<Member> selectByEmail(String email) {
+    List<Member> member = em.createQuery("select m from Member m where m.email = :email", Member.class)
+        .setParameter("email", email)
+        .getResultList();
+    return member.isEmpty() ? Optional.empty() : Optional.of(member.get(0));
+  }
