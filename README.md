@@ -10,8 +10,8 @@ https://regexr.com/
 ## Thymeleaf
 /*[+ ${msg} +]*/
 
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-                                       
+xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+
 dependencies {
   implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
 }
