@@ -18,3 +18,12 @@ xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/s
 dependencies {
   implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
 }
+
+CREATE TABLE persistent_logins (
+    username varchar(64) not null,
+    series varchar(64) not null,
+    token varchar(64) not null,
+    last_used timestamp not null,
+    PRIMARY KEY (series)
+);
+
