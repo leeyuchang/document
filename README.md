@@ -10,6 +10,9 @@ https://regexr.com/
 ## Thymeleaf
 /*[+ ${msg} +]*/
 
+### thymeleaf-extras-springsecurity
+     https://github.com/thymeleaf/thymeleaf-extras-springsecurity
+
 xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 
 dependencies {
