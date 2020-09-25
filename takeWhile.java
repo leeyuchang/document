@@ -11,7 +11,7 @@ public class takeWhile {
     parents // filter the element returns false
         .stream() // START
         .takeWhile(Base::call) // Stop when it meets false
-        .forEach(System.out::println);
+        .forEach(System.out::println); // Just print "My name is A"
   }
 }
 
