@@ -33,3 +33,5 @@ http://d1wcrax6umwade.cloudfront.net/index.html
 ### 日本語
 http://blog.daum.net/cyswu/16227951?category=192503
 
+### WSL環境下でHerokuを使う
+curl https://cli-assets.heroku.com/install.sh | sh
