@@ -29,3 +29,7 @@ CREATE TABLE persistent_logins (
 
 ### AWS
 http://d1wcrax6umwade.cloudfront.net/index.html
+
+### 日本語
+http://blog.daum.net/cyswu/16227951?category=192503
+
