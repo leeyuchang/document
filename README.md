@@ -27,3 +27,5 @@ CREATE TABLE persistent_logins (
     PRIMARY KEY (series)
 );
 
+### AWS
+http://d1wcrax6umwade.cloudfront.net/index.html
