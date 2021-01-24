@@ -1,0 +1,8 @@
+et btn = document.createElement('button')
+        btn.textContent = 'Submit'
+        btn.setAttribute('data-toggle', 'modal')
+        btn.setAttribute('data-target', '#myModal')
+        btn.style.display = 'none'
+        document.body.append(btn)
+undefined
+btn.click()
