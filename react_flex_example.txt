@@ -1,0 +1,85 @@
+import './App.css';
+
+const Header = () => (
+  <header>
+    <div className="text">Header</div>
+  </header>
+);
+
+const Main = () => (
+  <main>
+    <div className="text">Main</div>
+  </main>
+);
+
+const Footer = () => (
+  <footer>
+    <div className="text">Footer</div>
+  </footer>
+);
+
+function App() {
+  return (
+    <div className="container">
+      <Header />
+      <Main />
+      <Footer />
+    </div>
+  );
+}
+
+export default App;
+
+---
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  width: 100%;
+}
+
+header div {
+  background-color: #f1c40f;
+  height: 80px;
+}
+
+main {
+  width: 100%;
+}
+
+main div {
+  background-color: #1abc9c;
+  flex: 1;
+  height: calc(100vh - 160px);
+}
+
+footer {
+  width: 100%;
+}
+
+footer div {
+  background-color: #3498db;
+  height: 80px;
+}
+
+.text {
+  /* font-size: 26px; */
+  font-size: 1rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
