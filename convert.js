@@ -1,8 +1,11 @@
 class Item {
-  constructor(name, price, qty, tax) {
+  constructor(name, price, count, tax) {
+    // this classname is for deserialize
+    this.classname = this.constructor.name
+
     this._name = name
     this._price = price
-    this._qty = qty
+    this._count = count
     this._tax = tax
   }
 
@@ -14,8 +17,8 @@ class Item {
     return this._price
   }
 
-  get qty() {
-    return this._qty
+  get count() {
+    return this._count
   }
 
   get tax() {
@@ -25,10 +28,17 @@ class Item {
   accept(visitor) {
     return visitor.visit(this)
   }
+
+  serialize() {
+    return JSON.stringify(this)
+  }
 }
 
 class Discount {
   constructor(name, price) {
+    // this classname is for deserialize
+    this.classname = this.constructor.name
+
     this._name = name
     this._price = price
   }
@@ -43,11 +53,18 @@ class Discount {
 
   accept(visitor) {
     return visitor.visit(this)
+  }
+
+  serialize() {
+    return JSON.stringify(this)
   }
 }
 
 class Tip {
   constructor(name, price) {
+    // this classname is for deserialize
+    this.classname = this.constructor.name
+
     this._name = name
     this._price = price
   }
@@ -61,6 +78,10 @@ class Tip {
 
   accept(visitor) {
     return visitor.visit(this)
+  }
+
+  serialize() {
+    return JSON.stringify(this)
   }
 }
 
@@ -69,7 +90,7 @@ function ItemVisitor() {
     switch (arg.constructor) {
       case Item:
         const item = arg
-        return item.price * item.qty
+        return item.price * item.count
       default:
         return 0
     }
@@ -172,3 +193,37 @@ function run() {
 }
 
 run()
+
+// function serialize(instance) {
+//   var str = JSON.stringify(instance)
+//   // save str or whatever
+// }
+
+// function unserialize(str, theClass) {
+//   var instance = new theClass()
+//   // NOTE: if your constructor checks for unpassed arguments,
+//   // then just pass dummy ones to prevent throwing an error
+
+//   var serializedObject = JSON.parse(str)
+//   Object.assign(instance, serializedObject)
+//   return instance
+// }
+
+function deserialize(json) {
+  //o is [Object object], but it contains every state of the original object
+  let o = JSON.parse(json)
+
+  const original_class = isNode()
+    ? eval(o.classname) // in case of Node
+    : new Function(`return ${o.classname}`)() // in case of Web browser
+
+  return Object.assign(new original_class(), o)
+}
+
+function isNode() {
+  return typeof window == 'undefined' ? true : false
+}
+
+let foo = new Item('item01', 1000, 1, 0.05)
+let json = foo.serialize()
+console.log(deserialize(json))
