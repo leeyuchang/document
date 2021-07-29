@@ -1,7 +1,6 @@
 class Item {
   constructor(name, price, count, tax) {
-    // this classname is for deserialize
-    this.classname = this.constructor.name
+    this.classname = this.constructor.name // this is for deserialize
 
     this._name = name
     this._price = price
@@ -10,7 +9,7 @@ class Item {
   }
 
   get name() {
-    this._name
+    return this._name
   }
 
   get price() {
@@ -36,12 +35,10 @@ class Item {
 
 class Discount {
   constructor(name, price) {
-    // this classname is for deserialize
-    this.classname = this.constructor.name
+    this.classname = this.constructor.name // this is for deserialize
 
     this._name = name
     this._price = price
-    this._count = 1
   }
 
   get name() {
@@ -50,10 +47,6 @@ class Discount {
 
   get price() {
     return this._price
-  }
-
-  get count() {
-    return this._count
   }
 
   accept(visitor) {
@@ -67,12 +60,10 @@ class Discount {
 
 class Tip {
   constructor(name, price) {
-    // this classname is for deserialize
-    this.classname = this.constructor.name
+    this.classname = this.constructor.name // this is for deserialize
 
     this._name = name
     this._price = price
-    this._count = 1
   }
   get name() {
     return this._name
@@ -80,10 +71,6 @@ class Tip {
 
   get price() {
     return this._price
-  }
-
-  get count() {
-    return this._count
   }
 
   accept(visitor) {
@@ -96,11 +83,11 @@ class Tip {
 }
 
 function ItemVisitor() {
-  this.visit = (arg) => {
-    switch (arg.constructor) {
+  this.visit = (data) => {
+    switch (data.constructor) {
       case Item:
-        const item = arg
-        return item.price * item.count
+        const { price, count } = data
+        return price * count
       default:
         return 0
     }
@@ -108,11 +95,11 @@ function ItemVisitor() {
 }
 
 function DiscountVisitor() {
-  this.visit = (arg) => {
-    switch (arg.constructor) {
+  this.visit = (data) => {
+    switch (data.constructor) {
       case Discount:
-        const discount = arg
-        return discount.price * discount.count
+        const { price } = data
+        return price * 1 // make sure price must be number because of *1
       default:
         return 0
     }
@@ -120,12 +107,11 @@ function DiscountVisitor() {
 }
 
 function TaxVisitor() {
-  this.visit = (arg) => {
-    switch (arg.constructor) {
+  this.visit = (data) => {
+    switch (data.constructor) {
       case Item:
-        const item = arg
-        return item.price * item.count * item.tax
-      // return item.tax
+        const { price, count, tax } = data
+        return price * count * tax
       default:
         return 0
     }
@@ -133,34 +119,62 @@ function TaxVisitor() {
 }
 
 function TipVisitor() {
-  this.visit = (arg) => {
-    switch (arg.constructor) {
+  this.visit = (data) => {
+    switch (data.constructor) {
       case Tip:
-        const tip = arg
-        return tip.price
+        const { price } = data
+        return price * 1 // make sure price must be number because of *1
       default:
         return 0
     }
   }
 }
-
+/**
+ *
+ * @param {Array} cart
+ * @returns
+ */
 function calculateItemPrice(cart) {
   const visitor = new ItemVisitor()
-  return cart.reduce((sum, item) => sum + item.accept(visitor), 0).toFixed(2)
+  return cart.reduce((sum, item) => sum + item.accept(visitor), 0)
 }
 
+/**
+ *
+ * @param {Array} cart
+ * @param {Number} sumOfItemPrice
+ * @returns
+ */
 function calculateDiscount(cart, sumOfItemPrice) {
-  const visitor = new DiscountVisitor()
-  const discountPrice = cart.reduce(
-    (sum, val) => sum - sum * val.accept(visitor),
-    sumOfItemPrice * 1,
-  )
-  return (sumOfItemPrice - discountPrice).toFixed(2)
+  const discountDetails = []
+  const discountVisitor = new DiscountVisitor()
+
+  const sumOfDiscountPrice = cart.reduce((sum, discount) => {
+    const discountRate = discount.accept(discountVisitor)
+    const discountedPrice = sum * discountRate
+
+    const index = cart.findIndex((item) => item.price === discountRate)
+    const foundItem = index > -1 ? cart[index] : null
+
+    if (foundItem) {
+      discountDetails.push({
+        name: `Discount(${String(discountRate * 100).padStart(2)}%)`,
+        price: discountedPrice,
+      })
+    }
+
+    return sum - discountedPrice
+  }, sumOfItemPrice)
+
+  return {
+    discount: sumOfItemPrice - sumOfDiscountPrice,
+    discountDetails,
+  }
 }
 
 function calculateTax(cart) {
   const discountVisitor = new DiscountVisitor()
-  let discountsArray = []
+  const discountsArray = []
 
   // add all discounts
   cart.forEach((item) => {
@@ -168,8 +182,8 @@ function calculateTax(cart) {
       discountsArray.push(item.accept(discountVisitor))
     }
   })
-  let sum = []
-  let taxs = []
+  const sum = []
+  const taxs = []
   let index = 0
   cart.forEach((item) => {
     if (item.constructor == Item) {
@@ -178,19 +192,23 @@ function calculateTax(cart) {
         sum[index] = sum[index] - sum[index] * discocount
       })
       sum[index] = sum[index] * item.tax
-
-      taxs.push(sum[index])
+      taxs.push({
+        name: `Tax(${String(item.tax * 100).padStart(2)}%)`,
+        price: sum[index],
+      })
       index = index + 1
     }
   })
-  // let sumTax = sum.reduce((acc, val) => acc + val, 0).toFixed(2)
-  return [...taxs]
+  return {
+    tax: sum.reduce((acc, val) => acc + val, 0),
+    taxDetails: taxs,
+  }
 }
 
 function calculateTip(cart, subtotal, tax) {
   const visitor = new TipVisitor()
   const sumOfTip = cart.reduce((sum, item) => sum + item.accept(visitor), 0)
-  return ((1 * subtotal + 1 * tax) * sumOfTip).toFixed(2)
+  return (1 * subtotal + 1 * tax) * sumOfTip
 }
 
 function run() {
@@ -198,27 +216,29 @@ function run() {
 
   cart.push(new Item('item01', 1000, 1, 0.05)) // 5%
   cart.push(new Item('item02', 2000, 1, 0.1)) // 10%
-  cart.push(new Item('item03', 3000, 2, 0.13)) // 13%
-  cart.push(new Discount('discountPrice 5%', 0.05)) // 5%
-  cart.push(new Discount('discountPrice 10%', 0.1)) // 10%
+  cart.push(new Item('item03', 3000, 1, 0.13)) // 13%
+  cart.push(new Discount('Discount 5%', 0.05)) // 5%
+  cart.push(new Discount('Discount 10%', 0.1)) // 10%
   cart.push(new Tip('tip 10%', 0.1)) // 10%
 
   const sumOfItemPrice = calculateItemPrice(cart)
   console.log('sumOfItemPrice = ', sumOfItemPrice)
 
-  const discountPrice = calculateDiscount(cart, sumOfItemPrice)
-  console.log('discountedPrice = ', discountPrice)
+  const { discount, discountDetails } = calculateDiscount(cart, sumOfItemPrice)
+  console.log('discount = ', discount)
+  console.log('discountDetails = ', discountDetails)
 
-  const subtotal = (sumOfItemPrice - discountPrice).toFixed(2)
-  console.log('subtotal =  ', subtotal)
+  const subtotal = sumOfItemPrice - discount
+  console.log('subtotal = ', subtotal)
 
-  const tax = calculateTax(cart).reduce((sum, val) => sum + val, 0).toFixed(2)
+  const { tax, taxDetails } = calculateTax(cart)
   console.log('tax = ', tax)
+  console.log('taxDetails = ', taxDetails)
 
   const tip = calculateTip(cart, subtotal, tax)
   console.log('tip = ', tip)
 
-  const total = (1 * subtotal + 1 * tax + 1 * tip).toFixed(2)
+  const total = subtotal + tax + tip
   console.log('total = ', total)
 }
 
