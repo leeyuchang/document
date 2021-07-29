@@ -169,8 +169,8 @@ function calculateTax(cart) {
     }
   })
   let sum = []
+  let taxs = []
   let index = 0
-  let result = []
   cart.forEach((item) => {
     if (item.constructor == Item) {
       sum[index] = item.price * item.count
@@ -179,12 +179,12 @@ function calculateTax(cart) {
       })
       sum[index] = sum[index] * item.tax
 
-      result.push(sum[index])
+      taxs.push(sum[index])
       index = index + 1
     }
   })
   // let sumTax = sum.reduce((acc, val) => acc + val, 0).toFixed(2)
-  return [...result]
+  return [...taxs]
 }
 
 function calculateTip(cart, subtotal, tax) {
