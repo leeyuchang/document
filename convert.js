@@ -10,7 +10,7 @@ class Item {
   }
 
   get name() {
-    return this._name
+    this._name
   }
 
   get price() {
@@ -41,6 +41,7 @@ class Discount {
 
     this._name = name
     this._price = price
+    this._count = 1
   }
 
   get name() {
@@ -49,6 +50,10 @@ class Discount {
 
   get price() {
     return this._price
+  }
+
+  get count() {
+    return this._count
   }
 
   accept(visitor) {
@@ -67,6 +72,7 @@ class Tip {
 
     this._name = name
     this._price = price
+    this._count = 1
   }
   get name() {
     return this._name
@@ -74,6 +80,10 @@ class Tip {
 
   get price() {
     return this._price
+  }
+
+  get count() {
+    return this._count
   }
 
   accept(visitor) {
@@ -102,7 +112,7 @@ function DiscountVisitor() {
     switch (arg.constructor) {
       case Discount:
         const discount = arg
-        return discount.price
+        return discount.price * discount.count
       default:
         return 0
     }
@@ -114,7 +124,8 @@ function TaxVisitor() {
     switch (arg.constructor) {
       case Item:
         const item = arg
-        return item.price * item.tax
+        return item.price * item.count * item.tax
+      // return item.tax
       default:
         return 0
     }
@@ -140,23 +151,40 @@ function calculateItemPrice(cart) {
 
 function calculateDiscount(cart, sumOfItemPrice) {
   const visitor = new DiscountVisitor()
-  const discountPercent = cart.reduce(
-    (sum, item) => sum + item.accept(visitor),
-    0,
+  const discountPrice = cart.reduce(
+    (sum, val) => sum - sum * val.accept(visitor),
+    sumOfItemPrice * 1,
   )
-  return (sumOfItemPrice * discountPercent).toFixed(2)
+  return (sumOfItemPrice - discountPrice).toFixed(2)
 }
 
 function calculateTax(cart) {
-  let discount = new DiscountVisitor()
-  let sumDiscount = cart.reduce((sum, item) => sum + item.accept(discount), 0)
+  const discountVisitor = new DiscountVisitor()
+  let discountsArray = []
 
-  let tax = new TaxVisitor()
-  let sumTax = cart.reduce((sum, item) => {
-    const result = item.accept(tax)
-    return sum + (sumDiscount ? result * (1.0 - sumDiscount) : result)
-  }, 0)
-  return sumTax.toFixed(2)
+  // add all discounts
+  cart.forEach((item) => {
+    if (item.accept(discountVisitor)) {
+      discountsArray.push(item.accept(discountVisitor))
+    }
+  })
+  let sum = []
+  let index = 0
+  let result = []
+  cart.forEach((item) => {
+    if (item.constructor == Item) {
+      sum[index] = item.price * item.count
+      discountsArray.forEach((discocount) => {
+        sum[index] = sum[index] - sum[index] * discocount
+      })
+      sum[index] = sum[index] * item.tax
+
+      result.push(sum[index])
+      index = index + 1
+    }
+  })
+  // let sumTax = sum.reduce((acc, val) => acc + val, 0).toFixed(2)
+  return [...result]
 }
 
 function calculateTip(cart, subtotal, tax) {
@@ -170,6 +198,8 @@ function run() {
 
   cart.push(new Item('item01', 1000, 1, 0.05)) // 5%
   cart.push(new Item('item02', 2000, 1, 0.1)) // 10%
+  cart.push(new Item('item03', 3000, 2, 0.13)) // 13%
+  cart.push(new Discount('discountPrice 5%', 0.05)) // 5%
   cart.push(new Discount('discountPrice 10%', 0.1)) // 10%
   cart.push(new Tip('tip 10%', 0.1)) // 10%
 
@@ -182,7 +212,7 @@ function run() {
   const subtotal = (sumOfItemPrice - discountPrice).toFixed(2)
   console.log('subtotal =  ', subtotal)
 
-  const tax = calculateTax(cart, subtotal)
+  const tax = calculateTax(cart).reduce((sum, val) => sum + val, 0).toFixed(2)
   console.log('tax = ', tax)
 
   const tip = calculateTip(cart, subtotal, tax)
@@ -209,21 +239,21 @@ run()
 //   return instance
 // }
 
-function deserialize(json) {
-  //o is [Object object], but it contains every state of the original object
-  let o = JSON.parse(json)
+// function deserialize(json) {
+//   //o is [Object object], but it contains every state of the original object
+//   let o = JSON.parse(json)
 
-  const original_class = isNode()
-    ? eval(o.classname) // in case of Node
-    : new Function(`return ${o.classname}`)() // in case of Web browser
+//   const original_class = isNode()
+//     ? eval(o.classname) // in case of Node
+//     : new Function(`return ${o.classname}`)() // in case of Web browser
 
-  return Object.assign(new original_class(), o)
-}
+//   return Object.assign(new original_class(), o)
+// }
 
-function isNode() {
-  return typeof window == 'undefined' ? true : false
-}
+// function isNode() {
+//   return typeof window == 'undefined' ? true : false
+// }
 
-let foo = new Item('item01', 1000, 1, 0.05)
-let json = foo.serialize()
-console.log(deserialize(json))
+// let foo = new Item('item01', 1000, 1, 0.05)
+// let json = foo.serialize()
+// console.log(deserialize(json))
