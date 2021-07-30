@@ -207,8 +207,24 @@ function calculateTax(cart) {
 
 function calculateTip(cart, subtotal, tax) {
   const visitor = new TipVisitor()
-  const sumOfTip = cart.reduce((sum, item) => sum + item.accept(visitor), 0)
-  return (1 * subtotal + 1 * tax) * sumOfTip
+  const tipDetails = []
+
+  cart.reduce((sum, item) => {
+    const tipRate = item.accept(visitor)
+    const tipPrice = sum * tipRate
+
+    if (tipRate) {
+      tipDetails.push({
+        name: `Tip(${String(tipRate * 100).padStart(2)}%)`,
+        price: tipPrice.toFixed(2) * 1,
+      })
+    }
+    return sum + tipPrice
+  }, subtotal * 1 + tax * 1)
+  return {
+    tip: tipDetails.reduce((sum, t) => sum + t.price, 0).toFixed(2) * 1,
+    tipDetails,
+  }
 }
 
 function run() {
@@ -217,6 +233,7 @@ function run() {
   cart.push(new Item('item01', 1000, 1, 0.05)) // 5%
   cart.push(new Item('item02', 2000, 1, 0.1)) // 10%
   cart.push(new Item('item03', 3000, 1, 0.13)) // 13%
+  cart.push(new Item('item04', 4000, 1, 0.05)) // 5%
   cart.push(new Discount('Discount 5%', 0.05)) // 5%
   cart.push(new Discount('Discount 10%', 0.1)) // 10%
   cart.push(new Tip('tip 10%', 0.1)) // 10%
@@ -235,8 +252,9 @@ function run() {
   console.log('tax = ', tax)
   console.log('taxDetails = ', taxDetails)
 
-  const tip = calculateTip(cart, subtotal, tax)
+  const { tip, tipDetails } = calculateTip(cart, subtotal, tax)
   console.log('tip = ', tip)
+  console.log('tipDetails = ', tipDetails)
 
   const total = subtotal + tax + tip
   console.log('total = ', total)
